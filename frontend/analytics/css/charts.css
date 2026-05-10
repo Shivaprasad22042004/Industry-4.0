@@ -1,0 +1,30 @@
+/* Empty file for charts specific CSS, mostly handled by Chart.js but keeping for structure */
+.machine-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  transition: transform 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.machine-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+.machine-card__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.machine-card__name {
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+.machine-card__status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.status-running { background: var(--status-running); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+.status-idle { background: var(--status-idle); }
+.status-down { background: var(--status-down); }

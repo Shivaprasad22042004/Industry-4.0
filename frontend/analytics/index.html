@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeoLift 4.0 — Plant Dashboard</title>
+  <meta name="description" content="Real-time OEE & Energy monitoring dashboard">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar__logo">N</div>
+      <nav class="sidebar__nav">
+        <a href="index.html" class="sidebar__link active" data-tooltip="Dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </a>
+        <a href="machines.html" class="sidebar__link" data-tooltip="Machines">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </a>
+        <a href="alerts.html" class="sidebar__link" data-tooltip="Alerts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </a>
+        <a href="analytics.html" class="sidebar__link" data-tooltip="Analytics">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </a>
+      </nav>
+      <div class="sidebar__bottom">
+        <a href="simulator.html" class="sidebar__link" data-tooltip="Simulator">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </a>
+        <a href="settings.html" class="sidebar__link" data-tooltip="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </a>
+        <div class="sidebar__bottom-label">Owner View</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header__left">
+          <span class="header__brand">NeoLift 4.0</span>
+          <span class="header__version">V4.0</span>
+          <span class="header__shift" id="header-shift">SHIFT A</span>
+        </div>
+        <div class="header__right">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--status-running);animation:pulse-green 2s infinite"></div>
+            <span style="font-size:var(--text-xs);color:var(--status-running);font-weight:600">REAL-TIME</span>
+          </div>
+          <span class="header__clock" id="header-clock">--:--:--</span>
+          <div class="header__bell" onclick="window.location='alerts.html'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div class="header__bell-dot"></div>
+          </div>
+          <div class="header__avatar">SP</div>
+        </div>
+      </header>
+
+      <!-- PAGE -->
+      <div class="page-content">
+        <!-- KPI ROW -->
+        <div class="stats-bar" style="margin-bottom:var(--space-3)">
+          <div class="stat-card" style="border-left:3px solid var(--accent-primary)">
+            <div><div class="stat-card__label">Total Machines</div><div class="stat-card__value" id="stat-total">12</div><div style="font-size:var(--text-2xs);color:var(--text-muted)">Plant floor</div></div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--status-running)">
+            <div><div class="stat-card__label">Running</div><div class="stat-card__value" style="color:var(--status-running)" id="stat-running">8</div><div style="font-size:var(--text-2xs);color:var(--status-running)" id="stat-running-pct">66.7% active</div></div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--status-idle)">
+            <div><div class="stat-card__label">Idle</div><div class="stat-card__value" style="color:var(--status-idle)" id="stat-idle">3</div><div style="font-size:var(--text-2xs);color:var(--status-idle)" id="stat-idle-pct">25.0% idle</div></div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--status-down)">
+            <div><div class="stat-card__label">Down</div><div class="stat-card__value" style="color:var(--status-down)" id="stat-down">1</div><div style="font-size:var(--text-2xs);color:var(--status-down)" id="stat-down-machine">DRIL-05 critical</div></div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--accent-violet)">
+            <div><div class="stat-card__label">Plant OEE</div><div class="stat-card__value" style="color:var(--accent-violet)" id="stat-oee">67.0%</div><div style="font-size:var(--text-2xs);color:var(--status-running)" id="stat-oee-delta">↑ 2.1% vs yesterday</div></div>
+          </div>
+        </div>
+
+        <!-- MID ROW: OEE + Shift Target + Machine Grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:var(--space-3);margin-bottom:var(--space-3)">
+          <!-- OEE + ENERGY PANEL -->
+          <div class="card">
+            <div class="card__header"><span class="card__title">OEE Summary</span><span class="badge badge--realtime">LIVE</span></div>
+            <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4)">
+              <canvas id="oee-donut" width="90" height="90" style="flex-shrink:0"></canvas>
+              <div style="flex:1;display:flex;flex-direction:column;gap:var(--space-2)">
+                <div><div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-secondary)">Availability</span><span style="font-weight:600" id="oee-a-val">87.5%</span></div><div class="progress-bar" style="margin-top:3px"><div class="progress-bar__fill progress-bar__fill--blue" id="oee-a-bar" style="width:87.5%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-secondary)">Performance</span><span style="font-weight:600" id="oee-p-val">80.0%</span></div><div class="progress-bar" style="margin-top:3px"><div class="progress-bar__fill" id="oee-p-bar" style="width:80%;background:linear-gradient(90deg,#a78bfa,#818cf8)"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-secondary)">Quality</span><span style="font-weight:600" id="oee-q-val">95.0%</span></div><div class="progress-bar" style="margin-top:3px"><div class="progress-bar__fill progress-bar__fill--green" id="oee-q-bar" style="width:95%"></div></div></div>
+              </div>
+            </div>
+            <!-- ENERGY -->
+            <div class="card__header" style="margin-top:var(--space-2)"><span class="card__title">⚡ Energy</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">
+              <div class="metric-tile"><div class="metric-tile__label">Current</div><div class="metric-tile__value"><span id="energy-power">48.2</span><span class="metric-tile__unit"> kW</span></div></div>
+              <div class="metric-tile"><div class="metric-tile__label">Today</div><div class="metric-tile__value"><span id="energy-today">186</span><span class="metric-tile__unit"> kWh</span></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-2)">
+              <div class="metric-tile" style="border-color:rgba(99,102,241,0.15)"><div class="metric-tile__label">kWh / Part</div><div class="metric-tile__value" style="color:var(--accent-primary)"><span id="energy-kwh-part">0.22</span></div></div>
+              <div class="metric-tile" style="border-color:rgba(34,197,94,0.15)"><div class="metric-tile__label">🌱 CO₂ Today</div><div class="metric-tile__value" style="color:var(--status-running)"><span id="energy-co2">93 kg</span></div></div>
+            </div>
+          </div>
+
+          <!-- SHIFT TARGET -->
+          <div class="card">
+            <div class="card__header"><span class="card__title">Shift Target</span></div>
+            <div style="display:flex;justify-content:center;margin-bottom:var(--space-3)">
+              <canvas id="prod-donut" width="110" height="110"></canvas>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-muted)">Produced</span><span style="font-weight:600" id="shift-produced-row">1,450</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-muted)">Target</span><span style="font-weight:600" id="shift-target-row">2,000</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-muted)">Remaining</span><span style="font-weight:600;color:var(--status-idle)" id="shift-remaining">550</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-muted)">Completion</span><span style="font-weight:600;color:var(--status-running)" id="shift-pct-row">75%</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs)"><span style="color:var(--text-muted)">Shift</span><span style="font-weight:600" id="shift-name-row">SHIFT A</span></div>
+            </div>
+            <!-- ETA PREDICTION -->
+            <div id="shift-eta-banner" style="margin-top:var(--space-3);padding:var(--space-2) var(--space-3);background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-sm);font-size:var(--text-2xs);color:var(--status-running);display:flex;align-items:center;gap:5px">
+              📈 On track — est. 2,010 at shift end
+            </div>
+          </div>
+
+          <!-- MACHINE GRID -->
+          <div class="card" style="padding:var(--space-3)">
+            <div class="card__header" style="margin-bottom:var(--space-2)"><span class="card__title">Machine Floor</span></div>
+            <div class="machine-grid" id="machine-grid"></div>
+          </div>
+        </div>
+
+        <!-- BOTTOM ROW: Alerts + Utilisation + OEE Trend -->
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:var(--space-3)">
+          <!-- ALERTS -->
+          <div class="card">
+            <div class="card__header"><span class="card__title">Active Alerts</span><a href="alerts.html" style="font-size:var(--text-2xs);padding:2px 8px;border-radius:var(--radius-xs);background:var(--alert-critical-bg);color:var(--alert-critical);font-weight:600;text-decoration:none" id="alert-count-badge">28 active</a></div>
+            <div id="dashboard-alerts" style="display:flex;flex-direction:column;gap:var(--space-2)"></div>
+          </div>
+
+          <!-- UTILISATION -->
+          <div class="card">
+            <div class="card__header"><span class="card__title">Utilisation</span></div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-3)">
+              <div class="metric-tile" style="display:flex;justify-content:space-between;align-items:center;border-color:rgba(34,197,94,0.15)">
+                <div><div class="metric-tile__label">Highest</div><div style="font-size:var(--text-sm);font-weight:600;color:var(--status-running)" id="util-high-name">CNC-01</div></div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--status-running)" id="util-high-val">94.2%</div>
+              </div>
+              <div class="metric-tile" style="display:flex;justify-content:space-between;align-items:center;border-color:rgba(239,68,68,0.15)">
+                <div><div class="metric-tile__label">Lowest</div><div style="font-size:var(--text-sm);font-weight:600;color:var(--alert-critical)" id="util-low-name">DRIL-05</div></div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--alert-critical)" id="util-low-val">12.5%</div>
+              </div>
+            </div>
+            <div style="height:120px"><canvas id="util-bar-chart"></canvas></div>
+          </div>
+
+          <!-- OEE TREND 24H -->
+          <div class="card">
+            <div class="card__header"><span class="card__title">OEE Trend (24h)</span></div>
+            <div style="height:140px;margin-bottom:var(--space-3)"><canvas id="oee-trend-mini"></canvas></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)">
+              <div class="metric-tile"><div class="metric-tile__label">Avg OEE</div><div style="font-size:var(--text-base);font-weight:700;color:var(--accent-violet)" id="trend-avg">65.4%</div></div>
+              <div class="metric-tile"><div class="metric-tile__label">Peak</div><div style="font-size:var(--text-base);font-weight:700;color:var(--status-running)" id="trend-peak">79.2%</div></div>
+              <div class="metric-tile"><div class="metric-tile__label">Low</div><div style="font-size:var(--text-base);font-weight:700;color:var(--alert-critical)" id="trend-low">52.1%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAULT TICKER -->
+      <div class="fault-ticker">
+        <div class="fault-ticker__label"><div class="fault-ticker__label-icon">⚠</div>ACTIVE FAULTS:</div>
+        <div class="fault-ticker__scroll"><div class="fault-ticker__track" id="fault-track"></div></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MACHINE DRAWER -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeMachineDrawer()"></div>
+  <div class="drawer" id="machine-drawer"></div>
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/websocket.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/machine-drawer.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
