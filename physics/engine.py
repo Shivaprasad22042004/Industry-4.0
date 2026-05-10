@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 from .state_machine import MachineState, PRODUCTIVE_STATES
 from .validator import SensorValidator
 
+BEARING_VIBRATION_COEFFICIENT = 7.5
+RPM_IMBALANCE_RATIO_CAP = 2.0
+
 
 @dataclass
 class MachinePhysicsState:
@@ -399,10 +402,10 @@ class PhysicsEngine:
         
         rpm_reference = self.config.get('rpm_base', self.config['rpm_max'])
         rpm_ratio = self.state.spindle_rpm_actual / max(1.0, rpm_reference)
-        rpm_ratio = min(rpm_ratio, 2.0)
+        rpm_ratio = min(rpm_ratio, RPM_IMBALANCE_RATIO_CAP)
         imbalance = self.config['vibration_idle'] * (rpm_ratio ** 2)
         
-        bearing_vib = (self.state.bearing_age_pct / 100) ** 2 * 7.5
+        bearing_vib = (self.state.bearing_age_pct / 100) ** 2 * BEARING_VIBRATION_COEFFICIENT
         
         chatter = 0.0
         if self.state_enum == MachineState.RUNNING and self.state.tool_wear_pct > 60:
