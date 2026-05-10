@@ -108,7 +108,7 @@ class SensorValidator:
             if value > 0.05:  # Tighter: only leakage current
                 return (False, 0.0,
                         "Power must be ~0 when STOPPED (leakage only)",
-                        'CRITICAL')
+                        'ERROR')
             return True, max(0, value), "Valid", 'OK'
 
         # ── IDLE ──────────────────────────────────────────────────
@@ -132,15 +132,18 @@ class SensorValidator:
         # ── WARM_UP ─────────────────────────────────────────────
         if state == 'WARM_UP':
             # Spindle at partial RPM, no cutting
-            max_warmup = 5.0  # kW
+            rated_kw = config['power_rated_w'] / 1000.0
+            min_warmup = max(0.5, rated_kw * 0.10)
+            max_warmup = max(min_warmup + 0.5, rated_kw * 0.35)
             if value > max_warmup:
                 return (False, max_warmup,
-                        f"Warm-up power exceeds {max_warmup} kW "
-                        f"(no cutting load yet)",
+                        f"Warm-up power exceeds {max_warmup:.2f} kW "
+                        f"(no cutting load yet, scaled to rated power)",
                         'WARNING')
-            if value < 1.5:
-                return (False, 1.5,
-                        "Warm-up power below 1.5 kW (spindle friction minimum)",
+            if value < min_warmup:
+                return (False, min_warmup,
+                        f"Warm-up power below {min_warmup:.2f} kW "
+                        f"(spindle friction minimum, scaled to rated power)",
                         'WARNING')
             return True, value, "Valid", 'OK'
 
@@ -152,7 +155,7 @@ class SensorValidator:
             return (False, max_allowed_kw,
                     f"Power HARD CLAMPED to {max_allowed_kw:.1f} kW "
                     f"(absolute motor limit + overload margin)",
-                    'CRITICAL')
+                    'ERROR')
 
         if value < 0:
             return False, 0.0, "Power cannot be negative", 'CRITICAL'
