@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 from .state_machine import MachineState, PRODUCTIVE_STATES
 from .validator import SensorValidator
 
+BEARING_VIBRATION_COEFFICIENT = 7.5
+RPM_IMBALANCE_RATIO_CAP = 2.0
+
 
 @dataclass
 class MachinePhysicsState:
@@ -236,11 +239,13 @@ class PhysicsEngine:
         }
 
     def _update_health_variables(self, dt: float):
+        is_cutting = self.state_enum == MachineState.RUNNING
         if self.state.control_mode == 'NORMAL':
             # Realistic micro-aging
             rate = 0.00000278 * self.state.degrade_speed_multiplier  # % per second
             self.state.bearing_age_pct = min(100, self.state.bearing_age_pct + rate)
-            self.state.tool_wear_pct = min(100, self.state.tool_wear_pct + rate * 1.5)
+            if is_cutting:
+                self.state.tool_wear_pct = min(100, self.state.tool_wear_pct + rate * 1.5)
             self.state.coolant_health_pct = max(0, self.state.coolant_health_pct - rate * 0.5)
         
         elif self.state.control_mode == 'DEGRADE':
@@ -248,7 +253,8 @@ class PhysicsEngine:
             base_rate = 0.00000278
             rate = base_rate * self.state.degrade_speed_multiplier
             self.state.bearing_age_pct = min(100, self.state.bearing_age_pct + rate)
-            self.state.tool_wear_pct = min(100, self.state.tool_wear_pct + rate * 2.0)
+            if is_cutting:
+                self.state.tool_wear_pct = min(100, self.state.tool_wear_pct + rate * 2.0)
             self.state.coolant_health_pct = max(0, self.state.coolant_health_pct - rate * 0.8)
         
         elif self.state.control_mode == 'RECOVER':
@@ -262,7 +268,9 @@ class PhysicsEngine:
             # Fast interpolation to target values
             if hasattr(self.state, '_demo_target_bearing'):
                 self.state.bearing_age_pct += (self.state._demo_target_bearing - self.state.bearing_age_pct) * (dt / 10)
+            if hasattr(self.state, '_demo_target_tool'):
                 self.state.tool_wear_pct += (self.state._demo_target_tool - self.state.tool_wear_pct) * (dt / 10)
+            if hasattr(self.state, '_demo_target_coolant'):
                 self.state.coolant_health_pct += (self.state._demo_target_coolant - self.state.coolant_health_pct) * (dt / 10)
         
         # Auto-trigger faults
@@ -328,8 +336,11 @@ class PhysicsEngine:
             return random.uniform(base_min, base_max) * 1000.0
         
         if self.state_enum == MachineState.WARM_UP:
-            rpm_ratio = self.state.spindle_rpm_actual / self.config['rpm_max']
-            return (2000 + rpm_ratio * 3000)
+            rpm_ratio = min(1.0, max(0.0, self.state.spindle_rpm_actual / self.config['rpm_max']))
+            rated_kw = self.config['power_rated_w'] / 1000.0
+            min_kw = max(0.5, rated_kw * 0.10)
+            max_kw = max(min_kw + 0.5, rated_kw * 0.35)
+            return (min_kw + (max_kw - min_kw) * rpm_ratio) * 1000.0
         
         # RUNNING state
         ideal = max(1.0, self.config.get('ideal_cycle_time_s', 60))
@@ -379,9 +390,9 @@ class PhysicsEngine:
     def _compute_power_factor(self, power_w: float) -> float:
         load_ratio = power_w / self.config['power_rated_w']
         pf = 0.3 + (load_ratio * 0.62)
-        pf = max(0.3, min(0.95, pf))
         pf -= (self.state.bearing_age_pct / 100) * 0.04
-        return round(max(0.25, pf), 3)
+        pf = max(0.25, min(0.95, pf))
+        return round(pf, 3)
 
     def _compute_vibration(self, cutting_force: float) -> float:
         if self.state_enum == MachineState.STOPPED:
@@ -389,10 +400,12 @@ class PhysicsEngine:
         if self.state_enum == MachineState.IDLE:
             return random.uniform(0.1, self.config['vibration_idle'])
         
-        rpm_ratio = self.state.spindle_rpm_actual / self.config['rpm_max']
+        rpm_reference = self.config.get('rpm_base', self.config['rpm_max'])
+        rpm_ratio = self.state.spindle_rpm_actual / max(1.0, rpm_reference)
+        rpm_ratio = min(rpm_ratio, RPM_IMBALANCE_RATIO_CAP)
         imbalance = self.config['vibration_idle'] * (rpm_ratio ** 2)
         
-        bearing_vib = (self.state.bearing_age_pct / 100) ** 2 * 4.0
+        bearing_vib = (self.state.bearing_age_pct / 100) ** 2 * BEARING_VIBRATION_COEFFICIENT
         
         chatter = 0.0
         if self.state_enum == MachineState.RUNNING and self.state.tool_wear_pct > 60:
@@ -495,6 +508,7 @@ class PhysicsEngine:
                     'part_good': self._determine_part_quality()
                 }
                 self.state.current_cycle_time = 0.0 # Reset for next part
+                self.cycle_start_time = None
         
         return oee_event
 
